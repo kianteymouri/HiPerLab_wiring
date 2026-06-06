@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """
-compare_voltage_drop.py
+this script allows u to compare the different types of wire gauges
 
-Purpose:
-    Compare candidate wire gauges for each aircraft electrical branch.
-    Calculates round-trip resistance, voltage drop, voltage-drop percent,
-    wire heating/power loss, and estimated conductor mass for each candidate AWG.
+a wire type should be selected by amalyzing the following categories
+1. its ability to sustain continous current for long periods of time
+2. its ability to sustain peak current for short preiods of time
+3. minimizing its voltage drop
+4. minimizing power loss to heat
 
-How to use:
-    1. Edit the BRANCHES list below with your aircraft wiring branches.
-    2. Edit CANDIDATE_AWGS if you want to compare different gauges.
-    3. Run:
-        python compare_voltage_drop.py
+for each sub section(esc, motors etc) our script calculates:
+round trip resistance: R = 2Lr
+voltage drop: V_drop = (I_continous)*R
+voltage drop percent: V_percent = ( V_drop/(V_Battnominal) ) * 100
+Heat power loss: P = ( (I_continous)^2 ) * R
+Estimated conducotr mass for each canidate AWG
+
+users should first edit the BRANCHES list with wiring branches and then edit the CANIDATE_AWGS to compare specific gauges and then run the code
 
 Optional CSV input:
     You can also import branches from a CSV:
@@ -36,9 +40,8 @@ import csv
 from dataclasses import dataclass
 
 
-# Approximate copper/ETFE aircraft wire values.
-# Replace mass_g_per_m with the exact value from your selected wire datasheet.
-# Resistance values are approximate at 20 C.
+# Approximate copper/ETFE aircraft wire values from website: include link
+#keep in mind that resistance values are approximate at 20 C.
 AWG_TABLE = {
     # AWG: resistance ohm/m, mass g/m
     "24": {"resistance_ohm_per_m": 0.0842, "mass_g_per_m": 3.82},
@@ -77,7 +80,9 @@ class Branch:
         return 2.0 * self.installed_one_way_length_m
 
 
-# Edit these branches with your measured/routed lengths.
+#edit these branches with your measured/routed lengths.
+#included a ten percent margin for wiring around spars or other parts of the air craft
+#from left to right it reads; section name, branch voltage, continous current(A), peak current(A), one way length, awgs you want to test, percent allowance, and notes
 BRANCHES = [
     Branch("ESC branch - front left", 44.4, 45, 70, 1.2, ["10", "8", "6"], allowance_percent=10, notes="12S bus to ESC input"),
     Branch("ESC branch - front right", 44.4, 45, 70, 1.2, ["10", "8", "6"], allowance_percent=10, notes="12S bus to ESC input"),
