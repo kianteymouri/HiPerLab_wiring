@@ -11,7 +11,7 @@ NOTE:
 
 After running compare_gauges.py you should make a final decision based off of the following factors
 
-1.eliminating any awg that exceeds safety chart: 
+1.eliminating any awg that exceeds current safety chart: https://badgerwire.com/tech-info/wire-gauge-table/
 
 2. eliminating any awg that has a power loss of more than 10%
    
