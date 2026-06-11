@@ -10,6 +10,9 @@
 NOTE:
 
 After running compare_gauges.py you should make a final decision based off of the following factors
+
 1.eliminating any awg that exceeds safety chart: 
+
 2. eliminating any awg that has a power loss of more than 10%
+   
 3. picking lightest option and keeping mass in mind
