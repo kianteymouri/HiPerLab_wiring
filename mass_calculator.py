@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
 """
-wire_mass_calculator.py
 
 Purpose:
     Calculate wire mass branch-by-branch after you have chosen a wire gauge for each branch.
@@ -9,25 +7,6 @@ How to use:
     1. Edit CHOSEN_BRANCHES below with your selected gauges and measured routed lengths.
     2. Run:
         python wire_mass_calculator.py
-
-Optional CSV input:
-    python wire_mass_calculator.py --branches chosen_wire_branches.csv
-
-CSV columns:
-    name,awg,one_way_length_m,num_conductors,quantity,allowance_percent,notes
-
-Examples:
-    Power pair:
-        num_conductors = 2
-        quantity = 1
-
-    Three motor phase wires:
-        num_conductors = 3
-        quantity = 1
-
-    Five identical servo branches:
-        num_conductors = 2
-        quantity = 5
 """
 
 from __future__ import annotations
@@ -37,21 +16,36 @@ import csv
 from dataclasses import dataclass
 
 
-# Approximate mass values for ETFE/Tefzel-style copper aircraft wire.
+# Approximate mass values for copper wire. Data from : hhttps://wovenwire.com/reference/AWG-copper-wire-gauge-chart.htm
 # Replace with exact manufacturer values when you choose the actual wire.
 WIRE_MASS_G_PER_M = {
-    "24": 3.82,
-    "22": 5.45,
-    "20": 7.50,
-    "18": 11.70,
-    "16": 14.80,
-    "14": 22.20,
-    "12": 36.00,
-    "10": 55.00,
-    "8": 85.00,
-    "6": 135.00,
-    "4": 218.00,
-    "2": 340.00,
+    "1":    376.00,
+    "2":    299.00,
+    "3":    237.00,
+    "4":    188.00,
+    "5":    149.00,
+    "6":    118.00,
+    "7":    93.70,
+    "8":    74.30,
+    "9":    58.90,
+    "10":   46.80,
+    "11":   37.10,
+    "12":   29.50,
+    "13":   23.40,
+    "14":   18.50,
+    "15":   14.70,
+    "16":   11.60,
+    "17":   9.24,
+    "18":   7.32,
+    "19":   5.81,
+    "20":   4.61,
+    "21":   3.65,
+    "22":   2.89,
+    "23":   2.30,
+    "24":   1.82,
+    "25":   1.44,
+    "26":   1.15,
+    "27":   0.909,
 }
 
 
@@ -66,21 +60,25 @@ class ChosenBranch:
     notes: str = ""
 
     @property
+    #this calculates the length of each branch with the allowance---takes length of wire * allowance = total length
     def installed_length_per_conductor_m(self) -> float:
         return self.one_way_length_m * (1.0 + self.allowance_percent / 100.0)
 
     @property
+    #calculates both one way and return trip (positive and negative) along with how many of that branch--- takes installed_legth * 2(positive+negative) * 2 (maybe 2 servos)
     def total_conductor_length_m(self) -> float:
         return self.installed_length_per_conductor_m * self.num_conductors * self.quantity
 
     @property
+    #calculates total mass by finding gauge unit weight and multiplying by total length from previous
     def mass_g(self) -> float:
         if self.awg not in WIRE_MASS_G_PER_M:
             raise ValueError(f"Unknown AWG {self.awg!r}. Add it to WIRE_MASS_G_PER_M.")
         return self.total_conductor_length_m * WIRE_MASS_G_PER_M[self.awg]
 
 
-# Edit these after you finalize routing.
+# Edit these after finalizing routing and distances
+# from left to right goes: name, gauge, one way length, number of wires (conductors), allowance percentage, and then notes
 CHOSEN_BRANCHES = [
     ChosenBranch("Main battery/fuse/disconnect wiring", "4", 1.20, 1, allowance_percent=10, notes="Combined estimated conductor length entered as one-way equivalent"),
     ChosenBranch("ESC branch - front left power pair", "8", 1.20, 2, allowance_percent=10, notes="12S bus to ESC"),
@@ -179,8 +177,9 @@ def main() -> None:
     print(f"TOTAL WIRE MASS: {total_mass_g:.1f} g")
     print(f"TOTAL WIRE MASS: {total_mass_g / 1000:.3f} kg")
 
-    low_hardware_allowance_g = 700
-    high_hardware_allowance_g = 1300
+    #estimates based on distribtion block types
+    low_hardware_allowance_g = 100
+    high_hardware_allowance_g = 400
     print()
     print("Optional installed-system estimate including connectors, fuse holders, contactor,")
     print("distribution blocks, clamps, heat shrink, sleeving, and strain relief:")
